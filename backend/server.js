@@ -2,13 +2,17 @@ import express from "express";
 import dotenv from "dotenv";
 import { initDB } from "./config/db.js";
 import { sql } from "./config/db.js";
+import rateLimiterMiddleware from "./middleware/RateLimiter.js";
 
+// load environment variables
 dotenv.config();
 
+// initialize express app
 const app = express();
 
 // middleware
 app.use(express.json());
+app.use(rateLimiterMiddleware);
 
 const PORT = process.env.PORT || 5001; // default to 5001 if PORT not specified
 
