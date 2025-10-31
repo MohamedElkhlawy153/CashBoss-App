@@ -6,7 +6,7 @@ import { useRouter } from "expo-router";
 
 const NoTransactionsFound = () => {
   const router = useRouter();
-
+// Render the UI for when no transactions are found
   return (
     <View style={styles.emptyState}>
       <Ionicons
