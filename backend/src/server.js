@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import { initDB } from "./config/db.js";
 import rateLimiterMiddleware from "./middleware/RateLimiter.js";
 import transactionsRoute from "./routes/TransactionsRoute.js";
+import job from "./config/cron.js";
 
 // load environment variables
 dotenv.config();
@@ -10,15 +11,18 @@ dotenv.config();
 // initialize express app
 const app = express();
 
+// start cron job only in production environment to avoid multiple triggers during development
+if (process.env.NODE_ENV === "production") job.start();
+
 // middleware
 app.use(express.json());
 app.use(rateLimiterMiddleware);
 
 const PORT = process.env.PORT || 5001; // default to 5001 if PORT not specified
 
-// test endpoint
-app.get("/", (req, res) => { 
-    res.send("its working");
+// health check route to verify server is running
+app.get("/api/health", (req, res) => {
+  res.status(200).json({ status: "ok" });
 });
 
 // routes to handle transactions
