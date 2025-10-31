@@ -39,7 +39,7 @@ export default function SignUpScreen() {
       if (err.errors?.[0]?.code === "form_identifier_exists") {
         setError("That email address is already in use. Please try another.");
       } else {
-        setError("An error occurred. Please try again.");
+        setError("password must be at least 8 characters long and contain a number.");
       }
       console.log(err);
     }
@@ -71,7 +71,7 @@ export default function SignUpScreen() {
       console.error(JSON.stringify(err, null, 2));
     }
   };
-
+// ui of verification screen the user sees
 // If 'pendingVerification' is true, show the verification form
   if (pendingVerification) {
     return (
@@ -102,7 +102,7 @@ export default function SignUpScreen() {
       </View>
     );
   }
-
+   // ui of sign-up screen the user sees
   // Otherwise, show the sign-up form
   return (
     <KeyboardAwareScrollView
