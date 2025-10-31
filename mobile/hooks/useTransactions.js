@@ -2,7 +2,8 @@
 import { useCallback, useState} from 'react';
 import { Alert } from 'react-native';
 
-
+//
+// const API_URL = "https://CashBoss-api-cxqp.onrender.com/api"; // production URL its deployed
 // API base URL
 const API_URL = 'https://localhost:5001/api/transactions';
 
