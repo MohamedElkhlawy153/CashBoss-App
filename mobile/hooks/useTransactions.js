@@ -1,14 +1,14 @@
 // react custom hook to fetch and manage transactions
 import { useCallback, useState} from 'react';
 import { Alert } from 'react-native';
-
+import { API_URL } from '../constants/api';
 //
 // const API_URL = "https://CashBoss-api-cxqp.onrender.com/api"; // production URL its deployed
 // API base URL
-const API_URL = 'https://localhost:5001/api';
+//const API_URL = 'https://localhost:5001/api';
 
 // custom hook to manage transactions and summary
-export const useTransactions = (userID) => {
+export const useTransactions = (user_id) => {
     const [transactions, setTransactions] = useState([]);
     const [summary, setSummary] = useState({ income: 0, expenses: 0, balance: 0 });
     const [loading, setLoading] = useState(true);
@@ -16,7 +16,7 @@ export const useTransactions = (userID) => {
     // Fetch transactions for the user
     const fetchTransactions = useCallback (async () => {
         try {
-            const response = await fetch(`${API_URL}/${userID}`);
+            const response = await fetch(`${API_URL}/transactions/${user_id}`);
             const data = await response.json();
             setTransactions(data);
         } catch (error) {
@@ -24,12 +24,12 @@ export const useTransactions = (userID) => {
         } finally {
             setLoading(false);
         }
-    }, [userID]);
+    }, [user_id]);
 
     // Fetch summary (income, expenses, balance) for the user
     const fetchSummary = useCallback (async () => {
         try {
-            const response = await fetch(`${API_URL}/summary/${userID}`);
+            const response = await fetch(`${API_URL}/transactions/summary/${user_id}`);
             const data = await response.json();
             setSummary(data);
         } catch (error) {
@@ -37,11 +37,11 @@ export const useTransactions = (userID) => {
         } finally {
             setLoading(false);
         }
-    }, [userID]);
+    }, [user_id]);
 
 // Load both transactions and summary   
     const loadData = useCallback (async () => {
-        if (!userID) return;
+        if (!user_id) return;
 
         setLoading(true);
         try {
@@ -52,12 +52,12 @@ export const useTransactions = (userID) => {
         } finally {
           setLoading(false);
         }
-    }, [fetchTransactions, fetchSummary, userID]);
+    }, [fetchTransactions, fetchSummary, user_id]);
 
 
     const deleteTransaction = async (id) => { 
         try {
-            const response = await fetch(`${API_URL}/${id}`, {method: 'DELETE'});
+            const response = await fetch(`${API_URL}/transactions/${id}`, {method: 'DELETE'});
             if (!response.ok) throw new Error('Failed to delete transaction');
 
             // Refresh data after deletion
