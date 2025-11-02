@@ -1,6 +1,8 @@
-import { SignedIn, SignedOut, useUser } from "@clerk/clerk-expo";
+// ...existing code...
+import { useUser } from "@clerk/clerk-expo";
 import { Link, useRouter } from "expo-router";
-import { Alert, FlatList, Image, RefreshControl, Text, TouchableOpacity, View } from "react-native";
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Alert, FlatList, Image, Text, TouchableOpacity, View } from "react-native";
 import { SignOutButton } from "@/components/SignOutButton";
 import { useTransactions } from "../../hooks/useTransactions";
 import { useEffect, useState } from "react";
@@ -10,6 +12,8 @@ import { Ionicons } from "@expo/vector-icons";
 import { BalanceCard } from "../../components/BalanceCard";
 import { TransactionItem } from "../../components/TransactionItem";
 import NoTransactionsFound from "../../components/NoTransactionsFound";
+import { COLORS } from "../../constants/colors";
+// ...existing code...
 
 export default function Page() {
   const { user, isLoaded } = useUser();
@@ -25,12 +29,14 @@ export default function Page() {
     setRefreshing(false);
   }
 
-  // Load data when user ID changes 
+  // Load data when user ID becomes available
   useEffect(() => {
-    loadData();
+    if (user?.id) {
+      loadData();
+    }
   }, [loadData, user?.id]);
 
-// Function to handle transaction deletion with confirmation alert
+  // Function to handle transaction deletion with confirmation alert
   const handleDelete = (id) => {
     Alert.alert("Delete Transaction", "Are you sure you want to delete this transaction?", [
       { text: "Cancel", style: "cancel" },
@@ -38,64 +44,91 @@ export default function Page() {
     ]);
   };
 
-// wait until Clerk user is loaded
+  // wait until Clerk user is loaded
   if (!isLoaded) return <PageLoader />;
   if (isLoading) return <PageLoader />;
-   // Render the main page UI for signed-in users showing balance and transactions
-  return (
-    <View style={styles.container}>
-       <View style={styles.content}>  
-         {/* Header Section */}
-         <View style={styles.header}>
-           {/* header left*/}
-           <View style={styles.headerLeft}>
-               <Image 
-                source={require('../../assets/images/logo.png')} 
-                style={styles.headerLogo} 
-                resizeMode="contain"
-               />
-             <View style={styles.welcomeContainer}>
-               <Text style={styles.welcomeText}>Welcome,</Text>
-               <Text style={styles.usernameText}>
-                 {/* Display username before "@" in email (safe) */}
-                 {(() => {
-                    const email = user?.emailAddresses?.[0]?.emailAddress;
-                    return email ? email.split("@")[0] : "";
-                  })()}
-               </Text>
-             </View>
-             </View>
-           {/* header right*/}
-           <View style={styles.headerRight}>
-            <TouchableOpacity style={styles.addButton} onPress={() => router.push("/create")}>
-              <Ionicons name="add" size={20} color="#FFF" />
-              <Text style={styles.addButtonText}>Add</Text>
-            </TouchableOpacity>
-            <SignOutButton />
-        </View>
+
+
+
+// 
+  const ListHeader = () => (
+    <View style={styles.content}>
+      <View style={styles.headerButtons}>
+        <TouchableOpacity 
+          style={[styles.addButton, { backgroundColor: COLORS.primary }]} 
+          onPress={() => router.push("/create")}
+        >
+          <Ionicons name="add" size={18} color="#FFF" />
+          <Text style={styles.addButtonText}> New</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity 
+          style={[styles.addButton, { backgroundColor: COLORS.primary }]} 
+          onPress={() => router.push("/ai-advisor")}
+        >
+          <Ionicons name="bulb" size={18} color="#FFF" />
+          <Text style={styles.addButtonText}> AI Advice</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity 
+          style={[styles.addButton, { backgroundColor: COLORS.primary }]} 
+          onPress={() => router.push("/ai-chat")}
+        >
+          <Ionicons name="chatbubbles" size={18} color="#FFF" />
+          <Text style={styles.addButtonText}> Chat</Text>
+        </TouchableOpacity>
       </View>
-        {/* Balance Card Section */}
+
       <BalanceCard summary={summary} />
 
-      <View style={styles.transactionsHeader}>
-        <Text style={styles.transactionsTitle}>Recent Transactions</Text>
+      <View style={styles.transactionsHeaderContainer}>
+        <Text style={styles.sectionTitle}>Recent Transactions</Text>
       </View>
     </View>
+  );
 
-        {/* Transaction List Section*/}
-        {/*it was missing FlatList component to render the transactions*/}
-        <FlatList
-           style={styles.transactionsList}
-           contentContainerStyle={styles.transactionsListContent}
-           data={transactions}
-           renderItem={({ item }) => <TransactionItem item={item} onDelete={handleDelete} />}
-           ListEmptyComponent={<NoTransactionsFound />}
-           showsVerticalScrollIndicator={false}
-            refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-           // use FlatList's built-in refreshing props
+  return (
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.container}>
+        {/* Fixed Header */}
+        <View style={styles.header}>
+          <View style={styles.headerLeft}>
+            <Image
+              source={require('../../assets/images/logo.png')}
+              style={styles.headerLogo}
+              resizeMode="contain"
+            />
+            <View style={styles.welcomeContainer}>
+              <Text style={styles.welcomeText}>Welcome,</Text>
+              <Text style={styles.usernameText}>
+                {user?.emailAddresses?.[0]?.emailAddress?.split("@")[0] || "User"}
+              </Text>
+            </View>
+          </View>
+
+          <View style={styles.headerRight}>
+            <SignOutButton />
+          </View>
+        </View>
+
+        {/* Scrollable Content */}
+        <View style={styles.mainContent}>
+          <FlatList
+            data={transactions}
+            renderItem={({ item }) => (
+              <TransactionItem item={item} onDelete={handleDelete} />
+            )}
+            keyExtractor={(item) => String(item.id)}
+            ListEmptyComponent={<NoTransactionsFound />}
+            ListHeaderComponent={ListHeader}
+            contentContainerStyle={styles.transactionsListContent}
+            showsVerticalScrollIndicator={false}
             refreshing={refreshing}
             onRefresh={onRefresh}
-       />
-     </View>
-   );
- }
+          />
+        </View>
+      </View>
+    </SafeAreaView>
+  );
+}
+

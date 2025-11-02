@@ -4,6 +4,7 @@ import { initDB } from "./config/db.js";
 import rateLimiterMiddleware from "./middleware/RateLimiter.js";
 import transactionsRoute from "./routes/TransactionsRoute.js";
 import job from "./config/cron.js";
+import aiRoutes from "./routes/aiRoutes.js";
 
 // load environment variables
 dotenv.config();
@@ -27,6 +28,9 @@ app.get("/api/health", (req, res) => {
 
 // routes to handle transactions
 app.use("/api/transactions", transactionsRoute);
+
+// routes to handle AI functionalities
+app.use("/api/ai", aiRoutes);
 
 // initialize the database and then start the server
 initDB().then(() => {
